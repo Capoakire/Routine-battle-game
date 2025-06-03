@@ -147,7 +147,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             font-size: 24px;
             padding: 10px 20px;
             cursor: pointer;
@@ -346,6 +346,7 @@
                 taskImage.classList.remove('task-appear', 'task-defeated');
                 taskImage.style.opacity = '1';
                 const imageSrc = task.name === "teacher" ? 'teacher.png' : `task_${currentTask + 1}.png`;
+                console.log(`Loading image for task ${task.name} (index ${currentTask}): ${imageSrc}`);
                 loadImage(imageSrc, taskImage);
                 setTimeout(() => {
                     taskImage.classList.add('task-appear');
@@ -386,6 +387,7 @@
             img.onload = function() {
                 element.style.backgroundImage = `url('${src}')`;
                 element.textContent = '';
+                console.log(`Successfully loaded image: ${src}`);
             };
             img.onerror = function() {
                 console.error(`Failed to load image: ${src}`);
@@ -395,6 +397,7 @@
                 altImg.onload = function() {
                     element.style.backgroundImage = `url('${altSrc}')`;
                     element.textContent = '';
+                    console.log(`Successfully loaded alternate image: ${altSrc}`);
                 };
                 altImg.onerror = function() {
                     console.error(`Failed to load alternate image: ${altSrc}`);
