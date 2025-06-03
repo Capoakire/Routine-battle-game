@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Routine Battle</title>
+    <title>Advanced Daily Routine RPG</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -124,6 +124,13 @@
             border-radius: 10px;
             display: none;
         }
+        #message.victory {
+            font-size: 28px;
+            background-color: rgba(0, 255, 0, 0.9);
+            border: 3px solid gold;
+            padding: 30px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
         #try-again {
             position: absolute;
             bottom: 20px;
@@ -234,7 +241,7 @@
         let currentMove = 0;
         let playerHP = 5;
         let score = 0;
-        let lastTaskIndex = -1; // Track the last task to detect new tasks
+        let lastTaskIndex = -1;
 
         const taskImage = document.getElementById('task-image');
         const playerImage = document.getElementById('player-image');
@@ -249,7 +256,7 @@
         const message = document.getElementById('message');
         const tryAgainButton = document.getElementById('try-again');
 
-        const soundNames = ['theme', 'correct', 'wrong', 'game_over', 'appear'];
+        const soundNames = ['theme', 'correct', 'wrong', 'game_over', 'appear', 'victory'];
         const sounds = {};
 
         soundNames.forEach(name => {
@@ -266,7 +273,6 @@
             sounds[name].volume = 0.5;
         });
 
-        // Debug animation events
         taskImage.addEventListener('animationstart', () => console.log('Animation started:', taskImage.className));
         taskImage.addEventListener('animationend', () => console.log('Animation ended:', taskImage.className));
 
@@ -316,7 +322,6 @@
             playerNameText.textContent = "Player";
             updateHPBars();
 
-            // Apply appearance animation and sound only for a new task
             if (currentTask !== lastTaskIndex) {
                 console.log(`New task ${task.name}: Applying task-appear animation`);
                 taskImage.classList.remove('task-appear', 'task-defeated');
@@ -349,14 +354,28 @@
         }
 
         function loadImage(src, element) {
+            console.log(`Attempting to load image: ${src}`);
             const img = new Image();
             img.onload = function() {
                 element.style.backgroundImage = `url('${src}')`;
+                element.textContent = '';
             };
             img.onerror = function() {
                 console.error(`Failed to load image: ${src}`);
-                element.style.backgroundImage = 'none';
-                element.textContent = 'Image not found';
+                // Try alternate case
+                const altSrc = src.toLowerCase() === src ? src.toUpperCase() : src.toLowerCase();
+                console.log(`Trying alternate case: ${altSrc}`);
+                const altImg = new Image();
+                altImg.onload = function() {
+                    element.style.backgroundImage = `url('${altSrc}')`;
+                    element.textContent = '';
+                };
+                altImg.onerror = function() {
+                    console.error(`Failed to load alternate image: ${altSrc}`);
+                    element.style.backgroundImage = 'none';
+                    element.textContent = 'Image not found';
+                };
+                altImg.src = altSrc;
             };
             img.src = src;
         }
@@ -375,7 +394,6 @@
             }
 
             if (task.hp <= 0) {
-                // Apply defeat animation and slowed sound
                 taskImage.classList.remove('task-appear');
                 console.log('Applying task-defeated animation');
                 taskImage.classList.add('task-defeated');
@@ -388,7 +406,6 @@
                 if (currentTask < tasks.length) {
                     tasks[currentTask].hp = tasks[currentTask].maxHP;
                 }
-                // Delay next task to allow defeat animation
                 showMessage("Task completed! Moving to the next task.", true, 3000);
             } else {
                 currentMove = (currentMove + 1) % task.moves.length;
@@ -411,16 +428,15 @@
         function showMessage(text, isPositive, timeout = 2000) {
             message.textContent = text;
             message.style.backgroundColor = isPositive ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
+            message.classList.remove('victory');
             message.style.display = 'block';
             setTimeout(() => {
                 message.style.display = 'none';
                 taskImage.classList.remove('task-defeated');
                 if (playerHP > 0 && currentTask < tasks.length) {
                     if (timeout === 3000) {
-                        // Task defeated, show next task
                         showTask();
                     } else {
-                        // Same task, refresh moves
                         showMove();
                     }
                 }
@@ -429,7 +445,16 @@
 
         function endGame(victory) {
             sounds.theme.pause();
-            sounds.game_over.play().catch(e => console.error("Audio play failed:", e));
+            if (victory) {
+                sounds.victory.play().catch(e => console.error("Victory audio play failed:", e));
+                message.textContent = `Victory!\nYou completed all tasks!\nScore: ${score}/${tasks.length}`;
+                message.classList.add('victory');
+            } else {
+                sounds.game_over.play().catch(e => console.error("Game over audio play failed:", e));
+                message.textContent = `Game Over!\nYou ran out of energy.\nScore: ${score}/${tasks.length}`;
+                message.classList.remove('victory');
+            }
+            message.style.display = 'block';
             taskImage.style.backgroundImage = 'none';
             playerImage.style.backgroundImage = 'none';
             taskName.textContent = '';
@@ -440,12 +465,6 @@
             taskHPBar.style.width = '0%';
             playerHPText.textContent = '';
             taskHPText.textContent = '';
-            const endMessage = victory ? 
-                `Victory!\nYou completed all tasks!\nScore: ${score}/${tasks.length}` :
-                `Game Over!\nYou ran out of energy.\nScore: ${score}/${tasks.length}`;
-            message.textContent = endMessage;
-            message.style.backgroundColor = victory ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
-            message.style.display = 'block';
             tryAgainButton.style.display = 'block';
         }
 
