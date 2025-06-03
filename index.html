@@ -29,7 +29,7 @@
             background-repeat: no-repeat;
             background-position: center;
             transform-origin: center;
-            transition: opacity 1s ease-in-out; /* Ensure smooth opacity transition */
+            transition: opacity 1s ease-in-out;
         }
         #player-image { bottom: 50px; left: 50px; }
         #task-image { top: 50px; right: 50px; }
@@ -56,7 +56,7 @@
         .task-defeated {
             -webkit-animation: move-down 1s ease-in-out forwards;
             animation: move-down 1s ease-in-out forwards;
-            opacity: 0; /* Fade out during move-down */
+            opacity: 0;
         }
         .stats-container {
             position: absolute;
@@ -147,7 +147,7 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             font-size: 24px;
             padding: 10px 20px;
             cursor: pointer;
@@ -242,7 +242,7 @@
                 hp: 1,
                 maxHP: 1,
                 moves: [
-                    { correct: "Laugh at teacher’s Defeat", options: ["Laugh at teacher’s Defeat"] }
+                    { correct: "Laugh at Teacher’s Defeat", options: ["Laugh at Teacher’s Defeat"] }
                 ]
             }
         ];
@@ -289,7 +289,7 @@
             if (taskImage.classList.contains('task-defeated')) {
                 console.log('Clearing defeated task image');
                 taskImage.style.backgroundImage = 'none';
-                taskImage.style.opacity = '1'; /* Reset opacity for next task */
+                taskImage.style.opacity = '1';
             }
         });
 
@@ -344,8 +344,8 @@
             if (currentTask !== lastTaskIndex) {
                 console.log(`New task ${task.name}: Applying task-appear animation`);
                 taskImage.classList.remove('task-appear', 'task-defeated');
-                taskImage.style.opacity = '1'; /* Ensure opacity is reset */
-                const imageSrc = task.name === "Teacher" ? 'teacher.png' : `task_${currentTask + 1}.png`;
+                taskImage.style.opacity = '1';
+                const imageSrc = task.name === "teacher" ? 'teacher.png' : `task_${currentTask + 1}.png`;
                 loadImage(imageSrc, taskImage);
                 setTimeout(() => {
                     taskImage.classList.add('task-appear');
@@ -354,7 +354,7 @@
                 }, 100);
                 lastTaskIndex = currentTask;
 
-                if (task.name === "Teacher") {
+                if (task.name === "teacher") {
                     sounds.theme.pause();
                     sounds.congratulation.loop = true;
                     sounds.congratulation.play().catch(e => console.error("Congratulation audio play failed:", e));
@@ -412,9 +412,9 @@
             if (selectedOption === move.correct) {
                 sounds.correct.play().catch(e => console.error("Audio play failed:", e));
                 task.hp--;
-                if (task.name === "Teacher") {
+                if (task.name === "teacher") {
                     taskImage.classList.remove('task-appear');
-                    console.log('Applying task-defeated animation for Teacher');
+                    console.log('Applying task-defeated animation for teacher');
                     taskImage.classList.add('task-defeated');
                     sounds.appear.playbackRate = 0.5;
                     sounds.appear.play().catch(e => console.error("Audio play failed:", e));
@@ -429,7 +429,7 @@
                 showMessage("Oops! That's not correct. You lost 1 HP!", false);
             }
 
-            if (task.hp <= 0 && task.name !== "Teacher") {
+            if (task.hp <= 0 && task.name !== "teacher") {
                 taskImage.classList.remove('task-appear');
                 console.log('Applying task-defeated animation');
                 taskImage.classList.add('task-defeated');
@@ -443,7 +443,7 @@
                     tasks[currentTask].hp = tasks[currentTask].maxHP;
                 }
                 showMessage("Task completed! Moving to the next task.", true, 3000);
-            } else if (task.name !== "Teacher") {
+            } else if (task.name !== "teacher") {
                 currentMove = (currentMove + 1) % task.moves.length;
                 updateHPBars();
             }
