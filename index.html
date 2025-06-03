@@ -240,7 +240,7 @@
                 hp: 1,
                 maxHP: 1,
                 moves: [
-                    { correct: "Accept Congratulations", options: ["Accept Congratulations"] }
+                    { correct: "Laugh at Teacher’s Defeat", options: ["Laugh at Teacher’s Defeat"] }
                 ]
             }
         ];
@@ -285,6 +285,7 @@
         taskImage.addEventListener('animationend', () => console.log('Animation ended:', taskImage.className));
 
         function startGame() {
+            console.log('Starting game...');
             currentTask = 0;
             currentMove = 0;
             playerHP = 5;
@@ -298,6 +299,7 @@
         }
 
         function playThemeMusic() {
+            console.log('Playing theme music...');
             sounds.theme.play().catch(e => {
                 console.error("Audio play failed:", e);
                 const playButton = document.createElement('button');
@@ -333,7 +335,6 @@
             if (currentTask !== lastTaskIndex) {
                 console.log(`New task ${task.name}: Applying task-appear animation`);
                 taskImage.classList.remove('task-appear', 'task-defeated');
-                // Load teacher.png for Teacher task
                 const imageSrc = task.name === "Teacher" ? 'teacher.png' : `task_${currentTask + 1}.png`;
                 loadImage(imageSrc, taskImage);
                 setTimeout(() => {
@@ -343,7 +344,6 @@
                 }, 100);
                 lastTaskIndex = currentTask;
 
-                // Switch to congratulation theme for Teacher task
                 if (task.name === "Teacher") {
                     sounds.theme.pause();
                     sounds.congratulation.loop = true;
@@ -403,8 +403,13 @@
                 sounds.correct.play().catch(e => console.error("Audio play failed:", e));
                 task.hp--;
                 if (task.name === "Teacher") {
-                    // Immediately end game for Teacher
-                    endGame(true);
+                    taskImage.classList.remove('task-appear');
+                    console.log('Applying task-defeated animation for Teacher');
+                    taskImage.classList.add('task-defeated');
+                    sounds.appear.playbackRate = 0.5;
+                    sounds.appear.play().catch(e => console.error("Audio play failed:", e));
+                    showMessage("Oh no, my lesson plan failed! You’ve defeated me with your daily routine!", true, 3000);
+                    setTimeout(() => endGame(true), 3000);
                 } else {
                     showMessage("Correct! You're making progress!", true);
                 }
@@ -428,12 +433,12 @@
                     tasks[currentTask].hp = tasks[currentTask].maxHP;
                 }
                 showMessage("Task completed! Moving to the next task.", true, 3000);
-            } else if (playerHP <= 0) {
+            } else if (task.name !== "Teacher") {
                 currentMove = (currentMove + 1) % task.moves.length;
                 updateHPBars();
             }
 
-            if (playerHP <= 0 ) {
+            if (playerHP <= 0) {
                 endGame(false);
             }
         }
@@ -448,27 +453,27 @@
 
         function showMessage(text, isPositive, timeout = 2000) {
             message.textContent = text;
-            message.style.backgroundColor = isPositive ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0)';
+            message.style.backgroundColor = isPositive ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
             message.classList.remove('victory');
             message.style.display = 'block';
             setTimeout(() => {
                 message.style.display = 'none';
                 taskImage.classList.remove('task-defeated');
-                if (playerHP > 0 && currentTask < tasks.length) {
+                if (playerHP > 0 && currentTask < tasks.length && text !== "Oh no, my lesson plan failed! You’ve defeated me with your daily routine!") {
                     if (timeout === 3000) {
                         showTask();
                     } else {
                         showMove();
                     }
-                }, timeout);
-            }
+                }
+            }, timeout);
         }
 
         function endGame(victory) {
             sounds.theme.pause();
             sounds.congratulation.pause();
             if (victory) {
-                sounds[victory.play().catch(e => console.error("Victory audio play failed:", e));
+                sounds.victory.play().catch(e => console.error("Victory audio play failed:", e));
                 message.textContent = `Victory!\nYou completed all tasks!\nScore: ${score}/${tasks.length - 1}`;
                 message.classList.add('victory');
             } else {
@@ -491,11 +496,13 @@
         }
 
         document.getElementById('start-game').addEventListener('click', () => {
+            console.log('Start game button clicked');
             startGame();
             document.getElementById('start-game').style.display = 'none';
         });
 
         tryAgainButton.addEventListener('click', () => {
+            console.log('Try again button clicked');
             startGame();
             message.style.display = 'none';
             tryAgainButton.style.display = 'none';
