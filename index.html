@@ -29,6 +29,7 @@
             background-repeat: no-repeat;
             background-position: center;
             transform-origin: center;
+            transition: opacity 1s ease-in-out; /* Ensure smooth opacity transition */
         }
         #player-image { bottom: 50px; left: 50px; }
         #task-image { top: 50px; right: 50px; }
@@ -55,6 +56,7 @@
         .task-defeated {
             -webkit-animation: move-down 1s ease-in-out forwards;
             animation: move-down 1s ease-in-out forwards;
+            opacity: 0; /* Fade out during move-down */
         }
         .stats-container {
             position: absolute;
@@ -180,9 +182,9 @@
                 hp: 3,
                 maxHP: 3,
                 moves: [
-                    { correct: "Open eyes", options: ["Open eyes", "Close eyes", "Sleep again", "Stay in bed"] },
-                    { correct: "Get out of bed", options: ["Get out of bed", "Stay in bed", "Start snoring", "Take a nap"] },
-                    { correct: "Turn off alarm", options: ["Turn off alarm", "Throw alarm", "Ignore alarm", "Set another alarm"] }
+                    { correct: "Open your eyes", options: ["Open your eyes", "Close your eyes", "Sleep again", "Stay in bed"] },
+                    { correct: "Get out of the bed", options: ["Get out of the bed", "Stay in bed", "Start snoring", "Take a nap"] },
+                    { correct: "Turn off the alarm", options: ["Turn off the alarm", "Throw alarm", "Ignore alarm", "Set another alarm"] }
                 ]
             },
             { 
@@ -190,9 +192,9 @@
                 hp: 3,
                 maxHP: 3,
                 moves: [
-                    { correct: "Use toothbrush", options: ["Use toothbrush", "Use fork", "Drink water", "Comb hair"] },
+                    { correct: "Use the toothbrush", options: ["Use the toothbrush", "Use fork", "Drink water", "Comb hair"] },
                     { correct: "Apply toothpaste", options: ["Apply toothpaste", "Apply soap", "Apply shampoo", "Apply lotion"] },
-                    { correct: "Rinse mouth", options: ["Wash mouth", "Eat breakfast", "Go to work", "Take a nap"] }
+                    { correct: "Wash mouth", options: ["Wash mouth", "Eat breakfast", "Go to work", "Take a nap"] }
                 ]
             },
             {
@@ -210,9 +212,9 @@
                 hp: 3,
                 maxHP: 3,
                 moves: [
-                    { correct: "Finish last class", options: ["Finish the last class", "Skip the last class", "Stay for snack", "Go to a party"] },
+                    { correct: "Finish the last class", options: ["Finish the last class", "Skip last class", "Stay for snack", "Go to a party"] },
                     { correct: "Pack your bag", options: ["Pack your bag", "Leave books at school", "Forget your homework", "Take someone else's bag"] },
-                    { correct: "Travel home", options: ["Travel home", "Go to a friend's house", "Stay at school", "Go to the mall"] }
+                    { correct: "Go home", options: ["Go home", "Go to a friend's house", "Stay at school", "Go to the mall"] }
                 ]
             },
             {
@@ -220,7 +222,7 @@
                 hp: 3,
                 maxHP: 3,
                 moves: [
-                    { correct: "Prepare meal", options: ["Cook food", "Play videogame", "Skip dinner", "Eat snacks instead"] },
+                    { correct: "Prepare food", options: ["Prepare food", "Play videogame", "Skip dinner", "Eat snacks instead"] },
                     { correct: "Set the table", options: ["Set the table", "Eat on the couch", "Eat standing up", "Eat in bed"] },
                     { correct: "Enjoy your meal", options: ["Enjoy your meal", "Play with your food", "Feed it to the dog", "Throw it away"] }
                 ]
@@ -236,11 +238,11 @@
                 ]
             },
             {
-                name: "Teacher",
+                name: "teacher",
                 hp: 1,
                 maxHP: 1,
                 moves: [
-                    { correct: "Laugh at the teacher’s defeat", options: ["Laugh at teacher’s defeat"] }
+                    { correct: "Laugh at teacher’s Defeat", options: ["Laugh at teacher’s Defeat"] }
                 ]
             }
         ];
@@ -282,7 +284,14 @@
         });
 
         taskImage.addEventListener('animationstart', () => console.log('Animation started:', taskImage.className));
-        taskImage.addEventListener('animationend', () => console.log('Animation ended:', taskImage.className));
+        taskImage.addEventListener('animationend', () => {
+            console.log('Animation ended:', taskImage.className);
+            if (taskImage.classList.contains('task-defeated')) {
+                console.log('Clearing defeated task image');
+                taskImage.style.backgroundImage = 'none';
+                taskImage.style.opacity = '1'; /* Reset opacity for next task */
+            }
+        });
 
         function startGame() {
             console.log('Starting game...');
@@ -335,6 +344,7 @@
             if (currentTask !== lastTaskIndex) {
                 console.log(`New task ${task.name}: Applying task-appear animation`);
                 taskImage.classList.remove('task-appear', 'task-defeated');
+                taskImage.style.opacity = '1'; /* Ensure opacity is reset */
                 const imageSrc = task.name === "Teacher" ? 'teacher.png' : `task_${currentTask + 1}.png`;
                 loadImage(imageSrc, taskImage);
                 setTimeout(() => {
@@ -458,7 +468,6 @@
             message.style.display = 'block';
             setTimeout(() => {
                 message.style.display = 'none';
-                taskImage.classList.remove('task-defeated');
                 if (playerHP > 0 && currentTask < tasks.length && text !== "Oh no, my lesson plan failed! You’ve defeated me with your daily routine!") {
                     if (timeout === 3000) {
                         showTask();
